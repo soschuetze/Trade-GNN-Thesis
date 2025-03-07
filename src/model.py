@@ -93,15 +93,7 @@ class SiameseGNN(torch.nn.Module):
     def __init__(self, encoder, top_k, input_dim, dropout, nhidden):
         super(SiameseGNN, self).__init__()
 
-        if encoder == 'sage':
-            self.gnn = GraphSAGE(input_dim, nhidden, dropout)
-        elif encoder == 'gat':
-            self.gnn = GAT(input_dim, nhidden, dropout)
-        elif encoder == 'gin':
-            self.gnn == GIN(input_dim, nhidden, dropout)
-        else:
-            self.gnn == GCN(input_dim, nhidden, dropout)
-
+        self.encoder = encoder
         self.topk_layer = torch.topk
         self.top_k = top_k
         self.dropout = nn.Dropout(dropout)
@@ -118,8 +110,9 @@ class SiameseGNN(torch.nn.Module):
         self.fc3 = Linear(nhidden, 1)
 
     def forward(self, data1, data2):
-        out1 = self.gnn(data1)
-        out2 = self.gnn(data2)
+        
+        out1 = self.encoder(data1)
+        out2 = self.encoder(data2)
 
         similarity = self.similarity(out1, out2)
         out, _  = self.topk_layer(similarity, k=self.top_k)

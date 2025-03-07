@@ -102,9 +102,9 @@ def load_sequence(datapath):
   
     return data, labels, time
 
-def load_model(model_path: str):
+def load_model(model_type, model_path: str):
 
-    model = SiameseGNN_GraphSAGE(50, 27, dropout = 0.05, nhidden=16)
+    model = Siamese_GNN(model_type, 50, 27, dropout = 0.05, nhidden=16)
     model.load_state_dict(torch.load(model_path))
 
     return model
