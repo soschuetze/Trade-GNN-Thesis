@@ -41,7 +41,12 @@ This project explores the use of **Siamese Graph Neural Networks (Siamese-GNNs)*
    - Pairs of networks are labeled as 0 if they are separated by an economic shock (not belonging to the same distribution) or 1 if they are not (belong to same distribution).
    - Performance was evaluated using standard metrics such as precision, recall, and F1 score, with a focus on minimizing false positives (i.e., incorrectly detecting a change-point) and false negatives (i.e., missing a true change-point).
 
-
-
 4. **Analysis:**
    - Subnetworks of regions and products were then analyzed to understand how these are differentially impacted by economic shocks, with significant differences found.
+
+## Folders and Files
+1. **SRC** 
+- Contains train.py which can be run to train the model contained in model.py
+- Utils: helper functions for creating training pairs, detecting change-points after training models, traditional CPD methods, etc.
+2. **Notebooks**
+- Jupyter notebooks used to create networks with export data and MIS/random subsets of World Bank features
