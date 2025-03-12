@@ -13,7 +13,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from model import GraphSAGE, GCN, GAT, GIN, SiameseGNN
 from sklearn.model_selection import KFold
-from sklearn.metrics import f1_score, fbeta_score
+from sklearn.metrics import f1_score
 
 def load_data(args):
     """

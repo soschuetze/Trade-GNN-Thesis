@@ -1,6 +1,6 @@
 import numpy as np
 from src.utils.distances import DeltaConDistance, distance_frobenius, distance_procrustes
-from src.utils.metrics import find_best_threshold, adjust_predicts_donut, binary_metrics_adj, compute_ari
+from src.utils.metrics import adjust_predicts_donut, binary_metrics_adj, compute_ari
 from src.utils.functions import dist_labels_to_changepoint_labels, normalise_statistics
 import networkx as nx
 
@@ -61,7 +61,7 @@ def avg_procrustes_distance(nx_graphs, window_length, diff=False):
     return np.array(avg_dist), np.arange(window_length, len(data))
 
 
-def evaluate_baseline(model, test_data, test_labels, window_length, metric='adjusted_f1', tolerance=3, normalize=True, n_eigen=4, n_iter=3, diff=False):
+def evaluate_baseline(model, test_data, test_labels, window_length, metric='adjusted_f1', diff=False):
     """
     Evaluate SC-NCPD method on a dynamic network sequence, for a given metric and using a detection threshold selected on training sequence
 
@@ -71,9 +71,6 @@ def evaluate_baseline(model, test_data, test_labels, window_length, metric='adju
     :param test_labels:
     :param window_length:
     :param metric:
-    :param tolerance:
-    :param normalize:
-    :param n_eigen:
     :return:
     """
 
@@ -98,9 +95,7 @@ def evaluate_baseline(model, test_data, test_labels, window_length, metric='adju
     # Convert and adjust the distribution labels of the snaphots with the given tolerance level
     cp_lab_test = dist_labels_to_changepoint_labels(test_labels)[stat_test_times]
     
-    thresh, test_score = find_best_threshold(score=stat_test_norm, target=cp_lab_test, metric=metric)
-
-    # Evaluate on test sequence
+    thresh = 0.5
     test_score = binary_metrics_adj(score=stat_test_norm, target=cp_lab_test, threshold=thresh,
                                   adjust_predicts_fun=adjust_predicts_donut,
                                   only_f1=True) # adjusted f1 score
