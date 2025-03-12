@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch.nn import Linear, ReLU, LayerNorm
-from torch_geometric.nn.aggr import SortAggregation
-from torch_geometric.nn import SAGEConv, GINConv, GATConv, GCNConv, global_sort_pool
+from torch_geometric.nn import SAGEConv, GINConv, GATConv, GCNConv
 import torch.nn as nn
 
 #Embedding options

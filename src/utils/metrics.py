@@ -24,57 +24,6 @@ def compute_ari(est_cps, true_cps, T):
     return adjusted_rand_score(true_labels, labels)
 
 
-
-def find_best_threshold(
-        score,
-        target,
-        metric = 'adjusted_f1'):
-
-    smin = np.min(score)
-    smax = np.max(score)
-
-    threshold_values = np.linspace(smin, smax, 100)
-    metric_values = np.zeros_like(threshold_values)
-
-    for i,t in enumerate(threshold_values):
-
-        if metric == 'adjusted_f1':
-            metric_values[i] = binary_metrics_adj(
-                score = score,
-                target = target,
-                threshold = t,
-                adjust_predicts_fun = adjust_predicts_donut,
-                only_f1 = True,
-            )
-        else:
-            raise ValueError("Not yet implemented")
-
-    i_best = np.argmax(metric_values)
-    threshold_best = threshold_values[i_best]
-
-    threshold_best_same_f1 = threshold_values[metric_values == metric_values[i_best]]
-    if len(threshold_best_same_f1 ) >1:
-        idx = np.argmin( np.abs( threshold_best_same_f1 -np.median(threshold_best_same_f1)) )
-        threshold_best = threshold_best_same_f1[idx]
-
-    if metric == 'adjusted_f1':
-        metrics_best = binary_metrics_adj(
-            score = score,
-            target = target,
-            threshold = threshold_best,
-            adjust_predicts_fun = adjust_predicts_donut,
-            only_f1 = True,
-        )
-
-        return threshold_best, metrics_best
-
-    else:
-        raise ValueError("Not yet implemented")
-
-
-
-
-
 def adjust_predicts_donut(
         pred_label: Union[list, np.array],
         target: Union[list, np.array],
@@ -182,23 +131,8 @@ def binary_metrics(
     metrics['f1'] = sklearn.metrics.f1_score(y_true=target, y_pred=pred_label)
     if only_f1:
         return metrics['f1']
-    metrics['f2'] = sklearn.metrics.fbeta_score(y_true=target, y_pred=pred_label, beta=2)
-    metrics['f0.5'] = sklearn.metrics.fbeta_score(y_true=target, y_pred=pred_label, beta=1 / 2)
     metrics['precision'] = sklearn.metrics.precision_score(y_true=target, y_pred=pred_label)
-
     metrics['recall'] = sklearn.metrics.recall_score(y_true=target, y_pred=pred_label)
-
-    conf_mat = sklearn.metrics.confusion_matrix(y_true=target, y_pred=pred_label)
-    if conf_mat.shape != (2, 2):
-        TP = np.sum(pred_label * target)
-        TN = np.sum((1 - pred_label) * (1 - target))
-        FP = np.sum(pred_label * (1 - target))
-        FN = np.sum((1 - pred_label) * target)
-        conf_mat = np.array([[TN, FP], [FN, TP]])
-    metrics['TN'] = conf_mat[0, 0]
-    metrics['FN'] = conf_mat[1, 0]
-    metrics['TP'] = conf_mat[1, 1]
-    metrics['FP'] = conf_mat[0, 1]
 
     return metrics
 

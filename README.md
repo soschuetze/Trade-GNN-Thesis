@@ -1,5 +1,5 @@
 # Trade-GNN-Thesis
-Oxford thesis using Siamese-GNN to predict economic shocks in international trade network
+Thesis from University of Oxford MSc in Social Data Science. Creates Siamese-GNN to predict economic shocks in international trade network.
 
 ## Overview
 
