@@ -54,6 +54,7 @@ This project explores the use of **Siamese Graph Neural Networks (Siamese-GNNs)*
    - train.py: trains the Siamese-GNN
    - Utils: helper functions for network distances, metrics, sampling, etc.
 2. **Notebooks**
+   - create_graphs.ipynb: creates a graph for each year and exports to graphs_gdp file
    - change_point_detection.ipynb: graphs the detected change-points from both the traditional and S-GNN methods
    - create_features_dict.ipynb: creates the networks with node features from different feature selection methods
    - region-subnetwork-analysis.ipynb: creates the region sub-networks and graphs their detected change-points
