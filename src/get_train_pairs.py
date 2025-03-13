@@ -2,8 +2,8 @@
 import numpy as np
 import pickle as pkl
 import argparse
-from sample import sample_pairs
-from functions import dist_labels_to_changepoint_labels
+from utils.sample import sample_pairs
+from utils.functions import dist_labels_to_changepoint_labels
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample
 import random
