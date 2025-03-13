@@ -21,7 +21,7 @@ This project explores the use of **Siamese Graph Neural Networks (Siamese-GNNs)*
 ## Approach
 
 1. **Data Collection and Preprocessing:**
-   - Data was collected from publicly available WTO trade data collected and cleaned by the Harvard Growth Lab, focusing on bilateral trade data between countries over the years 1963-2018.
+   - Data was collected from publicly available WTO trade data collected and cleaned by the Harvard Growth Lab, focusing on bilateral trade data between countries over the years 1962-2018.
    - The data is represented as graphs, where nodes represent countries, and edges connect country A that exports to country B. The edge weights are the proportion of country A's exports that are sent to country B.
    - Preprocessing includes creating the trade networks using the trade data, incorporating the World Bank features, and normalizing the data.
 
