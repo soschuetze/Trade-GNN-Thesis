@@ -67,7 +67,7 @@ def load_sequence(datapath):
 
 def load_model(model_path: str):
 
-    encoder = GraphSAGE(27, 16, 0.1)
+    encoder = GAT(27, 16, 0.1)
     encoder.load_state_dict(torch.load(f'{model_path}-encoder.pt'))
     model = SiameseGNN(encoder, 50, 27, dropout = 0.05, nhidden=16)
     model.load_state_dict(torch.load(f'{model_path}.pt'))

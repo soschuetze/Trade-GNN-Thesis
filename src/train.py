@@ -108,6 +108,9 @@ def train_model(args, training_data_pairs, val_data_pairs):
     model_name = f"../saved-models/{model_type}-{args.gdp}-{feats}.pt"
     torch.save(model.state_dict(), model_name)
 
+    encoder_name = f"../saved-models/{model_type}-{args.gdp}-{feats}-encoder.pt"
+    torch.save(encoder.state_dict(), encoder_name)
+
     return train_losses, val_losses
 
 def train_model_cv(args, training_data_pairs, n_splits=5):
@@ -224,7 +227,7 @@ def main():
     torch.manual_seed(42)
     args = get_args()
 
-    train, val = load_data(args)
+    train, val, test = load_data(args)
     train_model(args, train, val)
 
 if __name__ == '__main__':

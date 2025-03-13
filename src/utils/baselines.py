@@ -1,7 +1,7 @@
 import numpy as np
-from src.utils.distances import DeltaConDistance, distance_frobenius, distance_procrustes
-from src.utils.metrics import adjust_predicts_donut, binary_metrics_adj, compute_ari
-from src.utils.functions import dist_labels_to_changepoint_labels, normalise_statistics
+from utils.distances import DeltaConDistance, distance_frobenius, distance_procrustes
+from utils.metrics import adjust_predicts_donut, binary_metrics_adj, compute_ari
+from utils.functions import dist_labels_to_changepoint_labels, normalise_statistics
 import networkx as nx
 
 def avg_deltacon_similarity(nx_graphs, window_length, diff=False):

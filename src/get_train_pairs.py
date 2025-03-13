@@ -11,6 +11,13 @@ import torch
 from utils.create_features import CreateFeatures
 
 def create_graphs_with_features(all_graphs, args):
+    """
+    Creates train/val/test pairs of graphs. Each pair contains two networks, each from different years, and a label of 0/1 which represents how similar they are. 
+    0: There is a change-point between them (because they belong to different distributions)
+    1: There is not a change-point between them (because they belong to the same distribution)
+
+    The data is balanced because there tend to be more negative pairs than positive.
+    """
 
     crisis_years = [1973, 1991, 1995, 2000, 2007, 2016, 2018]
     phases = []
@@ -64,8 +71,11 @@ def create_graphs_with_features(all_graphs, args):
 
 
 def add_features(args):
+    """
+    World bank data are added to the networks for each year as node features.
+    """
 
-    with open(f"../pygcn/{args.graph_dir}", "rb") as f:         
+    with open(f"{args.graph_dir}", "rb") as f:         
         graphs = pkl.load(f)
 
     if args.feature_type == 'none':
@@ -96,7 +106,7 @@ def add_features(args):
         'UZB', 'VCT', 'VEN', 'VNM', 'VUT', 'WSM', 'YEM', 'ZAF', 'ZMB',
         'ZWE']
             
-        with open(f"../../feature_dicts/{args.feature_type}.pkl", "rb") as f:
+        with open(f"feature_dicts/{args.feature_type}.pkl", "rb") as f:
             feat_dict = pkl.load(f)
 
         years = range(1962,2019)
@@ -138,10 +148,10 @@ def add_features(args):
 def get_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--graph_dir', type=str, default='../pygcn/graphs_nogdp.pkl', help='Name of folder with initial graphs')
-    parser.add_argument('--save_dir', type=str, default='../../sGNN_pickle_files/nogdp_randnorm', help='Name of folder where to store results')
-    parser.add_argument('--gdp', type=str, default='nogdp', help='Whether GDP is included')
-    parser.add_argument('--feature_type', type=str, default='rand_norm', help='Types of features to be added')
+    parser.add_argument('--graph_dir', type=str, default='data/graphs/graphs_gdp.pkl', help='Name of folder with initial graphs')
+    parser.add_argument('--save_dir', type=str, default='data/train-data/gdp_mis_norm', help='Name of folder where to store results')
+    parser.add_argument('--gdp', type=str, default='gdp', help='Whether GDP is included')
+    parser.add_argument('--feature_type', type=str, default='mis_norm', help='Types of features to be added')
 
     args = parser.parse_args()
     
