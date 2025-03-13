@@ -1,6 +1,6 @@
 # Trade-GNN-Thesis
 - **Primary research objective:** Can graph machine learning be used to better predict economic shocks in the international trade network (ITN) compared to traditional change-point detection methods?
-- **Secondary research objective:** How do the detected economic shocks differ by region and product sub-networks?
+- **Secondary research objective:** How do the detected economic shocks differ by region sub-networks?
 
 ## Overview
 
