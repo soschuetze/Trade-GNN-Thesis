@@ -46,6 +46,11 @@ This project explores the use of **Siamese Graph Neural Networks (Siamese-GNNs)*
 4. **Analysis:**
    - Subnetworks of regions were then analyzed to understand how these are differentially impacted by economic shocks, with significant differences found.
 
+## Findings
+Overall, this project finds a significant increase in predictive power with the use of S-GNNs. While the best performing traditional network distance measure achieves an F1 of 0.15 and an ARI of 0.40, the S-GNN models consistently achieve scores for both metrics above 0.90.
+
+Additionally, change-points do vary by region subnetwork and possibly represent region-specific events, indicating this method could be useful for economic analysis.
+
 ## Primary Folders and Files
 1. **SRC** 
    - detect.py: calculates the change-point years using the trained model on the set of test pairs
