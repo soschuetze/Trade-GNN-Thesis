@@ -205,6 +205,37 @@ def train_model_cv(args, training_data_pairs, n_splits=5):
 
     return all_train_losses, all_val_losses, all_val_f1
 
+def grid_search(args, training_data_pairs, val_data_pairs):
+    """
+    Perform grid search for hyperparameter tuning
+    """
+    learning_rates = [1e-4, 1e-3]
+    dropouts = [0.1, 0.3]
+    hidden_units_list = [16, 32]
+    sort_ks = [50, 100]
+
+    best_val_loss = float('inf')
+    best_params = None
+
+    for lr, dropout, hidden_units, sort_k in itertools.product(learning_rates, dropouts, hidden_units_list, sort_ks):
+        print(f"Trying hyperparameters: lr={lr}, dropout={dropout}, hidden_units={hidden_units}, sort_k={sort_k}")
+        args.learning_rate = lr
+        args.dropout = dropout
+        args.hidden_units = hidden_units
+        args.sort_k = sort_k
+
+        _, val_losses = train_model(args, training_data_pairs, val_data_pairs)
+        val_loss = val_losses[-1]
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_params = (lr, dropout, hidden_units, sort_k)
+
+    print(f"Best hyperparameters: lr={best_params[0]}, dropout={best_params[1]}, hidden_units={best_params[2]}, sort_k={best_params[3]}")
+    print(f"Best validation loss: {best_val_loss}")
+
+    return best_params
+
 def get_args():
 
     parser = argparse.ArgumentParser()
@@ -228,6 +259,7 @@ def main():
     args = get_args()
 
     train, val, test = load_data(args)
+    #args.learning_rate, args.dropout, args.hidden_units, args.sort_k = best_params
     train_model(args, train, val)
 
 if __name__ == '__main__':
