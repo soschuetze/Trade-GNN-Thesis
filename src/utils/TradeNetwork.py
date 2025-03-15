@@ -70,37 +70,12 @@ class TradeNetwork:
         self.gdp_growth = features_dict['NY.GDP.MKTP.KD.ZG']
         self.gdp_growth["prev_gdp_growth"] = self.gdp_growth['YR'+str(self.year-1)]
         self.gdp_growth["current_gdp_growth"] = self.gdp_growth['YR'+str(self.year)] 
-        self.gdp_growth["future_gdp_growth"] = self.gdp_growth['YR'+str(self.year+1)]
         #rename and keep relevant columns
         self.gdp_growth["country_code"] = self.gdp_growth["economy"]
-        self.gdp_growth = self.gdp_growth[["country_code", "prev_gdp_growth",
-                                "current_gdp_growth", "future_gdp_growth"]].dropna()
-        
-        ###IMPORT GDP PER CAPITA###
-        self.gdp_per_capita = features_dict['NY.GDP.PCAP.CD']
-        self.gdp_per_capita["prev_gdp_per_cap"] = self.gdp_per_capita['YR'+str(self.year-1)]
-        self.gdp_per_capita["current_gdp_per_cap"] = self.gdp_per_capita['YR'+str(self.year)]
-        self.gdp_per_capita["future_gdp_per_cap"] = self.gdp_per_capita['YR'+str(self.year+1)]
-        #rename and keep relevant columns
-        self.gdp_per_capita["country_code"] = self.gdp_per_capita["economy"]
-        self.gdp_per_capita = self.gdp_per_capita[["country_code", "prev_gdp_per_cap",
-                                "current_gdp_per_cap", "future_gdp_per_cap"]].dropna()
-        
-        ###IMPORT GDP PER CAPITA GROWTH###
-        self.gdp_per_capita_growth = features_dict['NY.GDP.PCAP.KD.ZG']
-        self.gdp_per_capita_growth["prev_gdp_per_cap_growth"] = self.gdp_per_capita_growth['YR'+str(self.year-1)]
-        self.gdp_per_capita_growth["current_gdp_per_cap_growth"] = self.gdp_per_capita_growth['YR'+str(self.year)]
-        self.gdp_per_capita_growth["future_gdp_per_cap_growth"] = self.gdp_per_capita_growth['YR'+str(self.year+1)]
-        
-        #rename and keep relevant columns
-        self.gdp_per_capita_growth["country_code"] = self.gdp_per_capita_growth["economy"]
-        self.gdp_per_capita_growth = self.gdp_per_capita_growth[["country_code", "prev_gdp_per_cap_growth",
-                                "current_gdp_per_cap_growth", "future_gdp_per_cap_growth"]].dropna()
+        self.gdp_growth = self.gdp_growth[["country_code", "prev_gdp_growth", "current_gdp_growth"]].dropna()
         
         ###MERGE ALL DATA FEATURES###
         self.features = pd.merge(self.gdp_growth, self.gdp, on = "country_code").dropna()
-        self.features = pd.merge(self.features, self.gdp_per_capita, on = "country_code").dropna()
-        self.features = pd.merge(self.features, self.gdp_per_capita_growth, on = "country_code").dropna()
 
     def prepare_network(self):
         """
@@ -127,21 +102,17 @@ class TradeNetwork:
         
         #get trade data for a given year
         trade_data = pd.read_stata(self.data_dir + "/country_partner_sitcproduct4digit_year_"+ str(self.year)+".dta") 
+        
         #merge with product / country descriptions
         trade_data = pd.merge(trade_data, self.country_codes[["location_code", "country_i"]],on = ["location_code"])
         trade_data = pd.merge(trade_data, self.country_codes[["partner_code", "country_j"]],on = ["partner_code"])
-        trade_data = pd.merge(trade_data, self.product_codes[["sitc_product_code", "product"]], 
-                              on = ["sitc_product_code"])
+        trade_data = pd.merge(trade_data, self.product_codes[["sitc_product_code", "product"]], on = ["sitc_product_code"])
+        
         ###select level of product aggregation
         trade_data["product_category"] = trade_data["sitc_product_code"].apply(lambda x: x[0:1])
         
-        #keep only nodes that we have features for
-        #trade_data = trade_data[trade_data["location_code"].isin(self.features["country_code"])]
-        #trade_data = trade_data[trade_data["partner_code"].isin(self.features["country_code"])]
-        
-        if (len(trade_data.groupby(["location_code", "partner_code", "sitc_product_code"])["import_value"].sum().reset_index()) != len(trade_data)):
-            print("import, export, product combination not unique!")
         self.trade_data1 = trade_data
+        
         #from import-export table, create only import table
         #extract imports
         imports1 = trade_data[['location_id', 'partner_id', 'product_id', 'year',
@@ -188,13 +159,13 @@ class TradeNetwork:
         #sum exports in each category 
         self.export_types = imports_table.groupby(["exporter_code", "product_category"])["import_value"].sum().reset_index()
         self.export_types = pd.merge(self.export_types, exporter_total, on = "exporter_code")
+        
         #multiply by 100 to allow weights to scale better in GNN
         self.export_types["category_fraction"] = self.export_types.import_value/self.export_types.export_total*10
-        ss = StandardScaler()
-        columns = list(set(self.export_types["product_category"]))
         self.export_types = self.export_types[["exporter_code", "product_category", "category_fraction"]]\
         .pivot(index = ["exporter_code"], columns = ["product_category"], values = "category_fraction")\
         .reset_index().fillna(0)
+        
         #rename columns
         rename_columns = []
         for col in self.export_types.columns:
@@ -214,26 +185,15 @@ class TradeNetwork:
         imports_table_grouped[["export_percent_feature"]] = scaler.fit_transform(np.log(imports_table_grouped[["export_percent"]]))
         imports_table_grouped["export_percent_feature"] = imports_table_grouped["export_percent_feature"] + abs(min(imports_table_grouped["export_percent_feature"]))
         
-        imports_table_grouped = pd.merge(imports_table_grouped, importer_total, how = "left")
-        imports_table_grouped["import_percent"] = imports_table_grouped["import_value"]/imports_table_grouped["import_total"]
-        scaler = StandardScaler()
-        imports_table_grouped[["import_percent_feature"]] = scaler.fit_transform(np.log(imports_table_grouped[["import_percent"]]))
-        imports_table_grouped["import_percent_feature"] = imports_table_grouped["import_percent_feature"] + abs(min(imports_table_grouped["import_percent_feature"]))
-        
         self.trade_data = imports_table_grouped
 
     def graph_create(self, exporter = True,
-            node_features = ['prev_gdp_growth', 'current_gdp_growth','prev_gdp','current_gdp'],
-            node_labels = 'future_gdp_growth'):
+            node_features = ['prev_gdp_growth', 'current_gdp_growth','prev_gdp','current_gdp']):
         
         if(exporter):
             center_node = "exporter_code"
             neighbors = "importer_code"
             edge_features = 'export_percent'
-        
-        #filter features and nodes to ones that are connected to others in trade data
-        # list_active_countries = list(set(list(self.trade_data ["importer_code"])+\
-        #                 list(self.trade_data ["exporter_code"])))
 
         list_active_countries = ['ABW', 'AFG', 'AGO', 'ALB', 'AND', 'ARE', 'ARG', 'ARM', 'ASM',
        'ATG', 'AUS', 'AUT', 'AZE', 'BDI', 'BEL', 'BEN', 'BFA', 'BGD',
@@ -263,14 +223,10 @@ class TradeNetwork:
         df_new = pd.DataFrame(list_active_countries, columns=['country_code'])
         self.features = pd.merge(df_new, self.features, on='country_code', how='left')
         self.features = self.features.fillna(0)
-
-        # self.features = self.features[self.features["country_code"].isin(list_active_countries)].reset_index()
-        # self.features.fillna(0, inplace = True)
         self.features["node_numbers"] = self.features.index
 
         #create lookup dictionary making node number / node features combatible with ordering of nodes
         #in our edge table
-
         self.node_lookup1 = self.features.set_index('node_numbers').to_dict()['country_code']
         self.node_lookup2 = self.features.set_index('country_code').to_dict()['node_numbers']
         
@@ -278,6 +234,7 @@ class TradeNetwork:
         self.regression_table = pd.merge(self.features, self.trade_data,
                         left_on = "country_code",
                         right_on = center_node, how = 'right')
+        
         #get features for trade partners
         self.regression_table = pd.merge(self.features, self.regression_table,
                                         left_on = "country_code",
@@ -291,16 +248,15 @@ class TradeNetwork:
         self.regression_table["target"] = self.trade_data[center_node].apply(lambda x: self.node_lookup2[x])    
 
         self.regression_table = self.regression_table.dropna()
+        
         #filter only to relevant columns
         self.relevant_columns = ["source", "target"]
         self.relevant_columns.extend(node_features)
-        self.relevant_columns.append(node_labels)
         self.graph_table = self.regression_table[self.relevant_columns]
         
         if(self.graph_table.isnull().values.any()): print("edges contain null / inf values")
 
-        self.node_attributes = torch.tensor(np.array(self.features[node_features]))\
-        .to(torch.float)
+        self.node_attributes = torch.tensor(np.array(self.features[node_features])).to(torch.float)
         self.source_nodes = list(self.graph_table["source"])
         self.target_nodes = list(self.graph_table["target"])
 
@@ -308,7 +264,6 @@ class TradeNetwork:
         
         self.pyg_graph = data.Data(x = self.node_attributes,
                                    edge_index = torch.tensor([self.source_nodes, self.target_nodes]),
-                                   edge_attr = torch.tensor(self.edge_attributes).to(torch.float),
-                                   y = torch.tensor(list(self.features[node_labels])).to(torch.float))
+                                   edge_attr = torch.tensor(self.edge_attributes).to(torch.float))
         
         return self.pyg_graph
